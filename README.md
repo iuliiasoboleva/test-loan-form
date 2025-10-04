@@ -1,46 +1,116 @@
-# Getting Started with Create React App
+# Loan Form (React + TS)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Тестовое задание: одностраничное приложение (SPA) с тремя последовательными формами и финальным модальным окном подтверждения.
 
-## Available Scripts
+## 🧰 Стек
+- **React + TypeScript**
+- **React Router v6**
+- **react-hook-form** + **Zod** (валидация на схеме)
+- **styled-components** (стили)
+- Встроенный **fetch** для API `dummyjson.com`
 
-In the project directory, you can run:
+> Обоснование выбора:
+> - `react-hook-form` + `Zod` — минимальные перерисовки, декларативная схема-валидация и типобезопасность.
+> - `styled-components` — локальные стили без конфигов; быстро для тестового.
+> - `fetch` — без лишних зависимостей; для продакшна можно заменить на RTK Query/React Query.
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## ▶️ Как запустить
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+**Требования:**
+- Node.js **>= 18**
+- npm **>= 9**
 
-### `npm test`
+```bash
+# 1. Установка зависимостей
+npm install
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# 2. Старт дев-сервера
+npm start
 
-### `npm run build`
+# 3. Открыть приложение
+# CRA автоматически откроет http://localhost:3000
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🧪 Как проверить работоспособность
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Маршруты
+- `/step1` — Личные данные
+- `/step2` — Адрес и место работы
+- `/step3` — Параметры займа
 
-### `npm run eject`
+Переходы выполняются кнопками **«Далее»** / **«Назад»**.  
+Все поля **обязательны**, состояние формы сохраняется между шагами.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Шаг 1 — Личные данные
+- Телефон в формате: `0XXX XXX XXX` (например, `0111 222 333`)
+- Имя, Фамилия — обязательны
+- Пол — обязательный select
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Шаг 2 — Адрес и место работы
+- **Место работы** — select, опции загружаются с `https://dummyjson.com/products/categories`.
+  - Реализован лёгкий **кеш** результатов в памяти на 5 минут.
+- **Адрес** — обязательное текстовое поле.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Шаг 3 — Параметры займа
+- Ползунок суммы: **$200…$1000**, шаг **100**
+- Ползунок срока: **10…30** дней, шаг **1**
+- Кнопка **«Подать заявку»**:
+  1. Делает `POST https://dummyjson.com/products/add`
+  2. Отправляет `{ "title": "<firstName> <lastName>" }`
+  3. После успешного ответа — **модальное окно**:
+     ```
+     Поздравляем, <Фамилия> <Имя>. Вам одобрена <сумма> на <срок> дней.
+     ```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+---
 
-## Learn More
+## 📦 Скрипты npm
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+npm start       # запуск dev-сервера CRA
+npm run build   # продакшн-бандл (build/)
+npm test        # (по умолчанию CRA)
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+---
+
+## 🔐 Валидация
+- На каждом шаге — Zod-схема.
+- Ошибки полей выводятся под инпутами.
+- Для корректной работы enum/select использована типобезопасная проверка строки.
+
+---
+
+## 🌐 Сеть и кеширование
+- Категории (шаг 2) запрашиваются у `dummyjson.com`; ответ **нормализуется** в `{ value, label }`.
+- Результат кешируется в памяти на **5 минут**, чтобы не делать повторных запросов при возврате назад.
+
+---
+
+## 🧯 Траблшутинг
+
+- **Ошибки типов Zod**  
+  Проект рассчитан на **Zod v3 (3.23.8)**. Если у вас `"zod": "^4.x"`, возможны несовместимости с `@hookform/resolvers`.  
+  Решение:
+  ```bash
+  npm remove zod
+  npm i zod@3.23.8 @hookform/resolvers@latest
+  ```
+
+- **CORS/сеть**  
+  Если `dummyjson.com` временно недоступен, select на шаге 2 покажет сообщение и кнопку «Повторить».
+
+---
+
+## ⏱️ Оценка времени (фактически на реализацию)
+- Создание проекта, базовая структура, стейт контекста — **0.5 ч**
+- Шаг 1 (валидация + стили) — **0.5–0.7 ч**
+- Шаг 2 (API категорий + кеш + нормализация + валидация) — **1.0–1.3 ч**
+- Шаг 3 (ползунки + POST + модалка) — **0.8–1.0 ч**
+- README, отладка, мелкие фиксы — **0.3–0.5 ч**
+
+**Итого:** ~ **3.1 – 4.0 часа**.

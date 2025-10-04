@@ -6,7 +6,6 @@ import ThirdStep from './pages/ThirdStep';
 import { useFormContext } from './context/FormContext';
 import { FormData } from './types';
 
-// тот же паттерн, что и на Step1
 const phoneRegex = /^0\d{3} \d{3} \d{3}$/;
 
 function isStep1Complete(data: Partial<FormData>): boolean {
